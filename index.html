@@ -114,13 +114,14 @@
         
         textarea { 
             width: 100%; 
-            min-height: 350px; 
+            min-height: 120px; 
             background: #1a1f2e; 
             color: #fff; 
             border: 2px solid #2c3140;
             font-family: 'Courier New', monospace;
-            line-height: 1.6;
+            line-height: 1.4;
             resize: vertical;
+            font-size: 1.1rem;
         }
         
         .btn-gerar {
@@ -218,16 +219,16 @@
 <div class="painel">
     <h1>🎵 Suno AI</h1>
     <h2 style="text-align: center; color: #00d4ff; margin-bottom: 1rem;">Gerador de Prompts</h2>
-    <p class="subtitle">Crie prompts únicos e poderosos para suas criações musicais no Suno AI</p>
+    <p class="subtitle">Crie prompts únicos e compactos (máx. 200 caracteres) para suas criações musicais no Suno AI</p>
     
     <div class="opcoes">
-        <button onclick="setModo('melhor')" class="active" id="btn-melhor">🏆 Melhor Combinação</button>
-        <button onclick="setModo('aleatorio')" id="btn-aleatorio">🎲 Automático</button>
-        <button onclick="setModo('semi')" id="btn-semi">⚡ Semi-automático</button>
-        <button onclick="setModo('manual')" id="btn-manual">🎛️ Manual</button>
+        <button class="active" id="btn-melhor">🏆 Melhor Combinação</button>
+        <button id="btn-aleatorio">🎲 Automático</button>
+        <button id="btn-semi">⚡ Semi-automático</button>
+        <button id="btn-manual">🎛️ Manual</button>
     </div>
 
-    <form id="form-gerador" onsubmit="gerarPrompt(event)">
+    <form id="form-gerador">
         <div id="campos-dinamicos"></div>
         <button type="submit" class="btn-gerar">🚀 Gerar Prompt Musical</button>
     </form>
@@ -235,7 +236,7 @@
     <div class="prompt-area" id="prompt-area" style="display:none;">
         <label for="prompt-txt">🎼 Seu Prompt Suno AI:</label>
         <textarea id="prompt-txt" readonly placeholder="Seu prompt aparecerá aqui..."></textarea>
-        <button class="btn-copiar" onclick="copiarPrompt()">📋 Copiar Prompt</button>
+        <button class="btn-copiar" id="btn-copiar">📋 Copiar Prompt</button>
     </div>
     
     <div class="footer">
@@ -244,144 +245,126 @@
 </div>
 
 <script>
-    // Dados musicais expandidos
+(function() {
+    'use strict';
+    
+    // Dados musicais compactos para Suno AI (200 chars max)
     const GENRES = [
-        "[GENRE: Experimental Sound Design, Dark Psytrance]",
-        "[GENRE: Cinematic Ambient, Cyberpunk Bass]",
-        "[GENRE: Sci-Fi Horror, Industrial Noise]",
-        "[GENRE: Psychedelic Goa Trance, Organic Techno]",
-        "[GENRE: Dark Ambient, Drone Metal]",
-        "[GENRE: Synthwave, Retrowave, Outrun]",
-        "[GENRE: Trap, Hip-Hop, Urban Beats]",
-        "[GENRE: Progressive House, Deep Tech]",
-        "[GENRE: Jazz Fusion, Neo-Soul]",
-        "[GENRE: Rock Alternativo, Post-Grunge]"
+        "Dark Psytrance",
+        "Synthwave",
+        "Industrial Techno", 
+        "Jazz Fusion",
+        "Trap Hip-Hop",
+        "Progressive House",
+        "Ambient Drone",
+        "Post Rock",
+        "Breakbeat",
+        "Dubstep"
     ];
     
     const MOODS = [
-        "[MOOD: Cosmic tension, controlled chaos]",
-        "[MOOD: Hypnotic darkness, ritualistic energy]",
-        "[MOOD: Chaotic frequencies, mechanical breakdown]",
-        "[MOOD: Eerie dystopia, unknown transmissions]",
-        "[MOOD: Mystical, transcendent, otherworldly]",
-        "[MOOD: Energetic, uplifting, motivational]",
-        "[MOOD: Melancholic, introspective, nostalgic]",
-        "[MOOD: Aggressive, powerful, intense]",
-        "[MOOD: Dreamy, ethereal, floating]",
-        "[MOOD: Urban, gritty, street-wise]"
+        "energetic uplifting",
+        "dark mysterious", 
+        "dreamy ethereal",
+        "aggressive intense",
+        "melancholic nostalgic",
+        "cosmic transcendent",
+        "urban gritty",
+        "peaceful meditative"
     ];
     
     const INSTRUMENTS = [
-        "[INSTRUMENT: Modular synthesizers]",
-        "[INSTRUMENT: Industrial noises]",
-        "[INSTRUMENT: Processed explosions]",
-        "[INSTRUMENT: Atmospheric drones]",
-        "[INSTRUMENT: Psytrance basslines]",
-        "[INSTRUMENT: Glitch vocals]",
-        "[INSTRUMENT: Metallic percussion]",
-        "[INSTRUMENT: AI-generated choir]",
-        "[INSTRUMENT: Dark orchestral strings]",
-        "[INSTRUMENT: Granular piano textures]",
-        "[INSTRUMENT: Electric guitar riffs]",
-        "[INSTRUMENT: Vintage analog drums]",
-        "[INSTRUMENT: Saxophone solos]",
-        "[INSTRUMENT: Ethereal pad synths]",
-        "[INSTRUMENT: 808 drum machines]"
+        "synth lead",
+        "heavy bass",
+        "analog drums",
+        "electric guitar",
+        "saxophone",
+        "piano",
+        "vocal chops",
+        "strings",
+        "brass section"
     ];
     
-    const TEMPOS = [60, 70, 80, 90, 100, 110, 120, 128, 130, 140, 145, 150, 155, 160, 165, 170, 175, 180];
+    const TEMPOS = [70, 85, 100, 110, 120, 128, 140, 150, 160, 175];
     
-    const POSSIBLE_SECTIONS = {
-        "[INTRO]": [
-            "[SOUND: Low-frequency drones oscillate, evoking a dormant entity stirring in the void]",
-            "[SOUND: Intermittent static bursts crackle like corrupted transmissions]",
-            "[SOUND: Glitch artifacts and distorted radio signals fade in and out, struggling to form coherence]",
-            "[SOUND: Gentle piano melody emerges from ambient textures]",
-            "[SOUND: Atmospheric pad slowly builds tension and anticipation]"
-        ],
-        "[VERSE]": [
-            "[SOUND: Steady rhythm section establishes the groove]",
-            "[SOUND: Melodic elements interweave with percussive patterns]",
-            "[SOUND: Vocal harmonies float over the instrumental foundation]",
-            "[SOUND: Bass line drives the progression forward]"
-        ],
-        "[CHORUS]": [
-            "[SOUND: Full arrangement explodes with energy and emotion]",
-            "[SOUND: Hook melody dominates with powerful impact]",
-            "[SOUND: Layered vocals create anthemic feeling]",
-            "[SOUND: All instruments unite in musical climax]"
-        ],
-        "[BUILDUP]": [
-            "[SOUND: A rising pulse of synthetic percussion intensifies]",
-            "[SOUND: Distorted alarm signals blend with atmospheric swells]",
-            "[SOUND: Layered textures gradually become more frenetic]",
-            "[SOUND: Energy builds through ascending arpeggios]"
-        ],
-        "[DROP]": [
-            "[SOUND: Massive bass drop with crushing impact]",
-            "[SOUND: All elements converge in explosive release]",
-            "[SOUND: Rhythmic complexity reaches peak intensity]",
-            "[SOUND: Sonic chaos organized into driving force]"
-        ],
-        "[BREAKDOWN]": [
-            "[SOUND: Sudden drop into a minimal, hollow reverb space]",
-            "[SOUND: Metallic echoes and fragmented beat loops create tension]",
-            "[SOUND: Ghostly vocal snippets and glitchy resonances hover in the background]",
-            "[SOUND: Stripped-down elements focus on core groove]"
-        ],
-        "[BRIDGE]": [
-            "[SOUND: Contrasting section provides emotional shift]",
-            "[SOUND: New melodic ideas introduced and developed]",
-            "[SOUND: Dynamic change prepares for final section]",
-            "[SOUND: Tension builds toward resolution]"
-        ],
-        "[CLIMAX]": [
-            "[SOUND: The psytrance bassline returns with full force, unstoppable]",
-            "[SOUND: Harsh industrial design merges into a relentless beat]",
-            "[SOUND: Chaotic modulation and resampled percussion blur the line between order and entropy]",
-            "[SOUND: Psychedelic lead arpeggios swirl, fighting against dissonant metallic drones]",
-            "[SOUND: Ultimate expression of musical power and emotion]"
-        ],
-        "[OUTRO]": [
-            "[SOUND: The main beat disintegrates into glitchy fragments]",
-            "[SOUND: Deep sub drones sustain, fading into a vacuum]",
-            "[SOUND: Residual static pulses echo like failed transmissions]",
-            "[SOUND: A single, distant beep signifies the final system shutdown]",
-            "[SOUND: Gentle fade to silence with lingering reverb]"
-        ]
-    };
-
-    // Utilitários
-    function getRandom(arr, n=1) {
-        let copy = [...arr];
-        let result = [];
-        for(let i=0; i<n; i++) {
-            if(copy.length === 0) break;
-            let idx = Math.floor(Math.random() * copy.length);
-            result.push(copy.splice(idx, 1)[0]);
-        }
-        return n===1 ? result[0] : result;
-    }
+    const VOCALS = [
+        "male vocals",
+        "female vocals", 
+        "choir",
+        "rap vocals",
+        "whispered",
+        "robotic vocals",
+        "no vocals"
+    ];
 
     // Estado do modo selecionado
     let modoAtual = 'melhor';
 
-    function setModo(modo) {
+    // Utilitários
+    function getRandom(arr, n = 1) {
+        let copy = [...arr];
+        let result = [];
+        for(let i = 0; i < n; i++) {
+            if(copy.length === 0) break;
+            let idx = Math.floor(Math.random() * copy.length);
+            result.push(copy.splice(idx, 1)[0]);
+        }
+        return n === 1 ? result[0] : result;
+    }
+
+    function gerarPromptCompacto(genre, mood, tempo, instruments, vocals) {
+        let parts = [];
+        
+        if(genre) parts.push(genre);
+        if(mood) parts.push(mood);
+        if(tempo) parts.push(`${tempo} BPM`);
+        
+        // Instrumentos: se é array, junta com vírgula; se é string, adiciona direto
+        if(instruments) {
+            if(Array.isArray(instruments)) {
+                if(instruments.length > 0) parts.push(instruments.join(', '));
+            } else {
+                parts.push(instruments);
+            }
+        }
+        
+        if(vocals) parts.push(vocals);
+        
+        let prompt = parts.join(', ');
+        
+        // Garantir que não passe de 200 caracteres
+        if(prompt.length > 200) {
+            prompt = prompt.substring(0, 197) + '...';
+        }
+        
+        return prompt;
+    }
+
+    // Funções principais
+    window.setModo = function(modo) {
         // Remove active de todos os botões
         document.querySelectorAll('.opcoes button').forEach(btn => {
             btn.classList.remove('active');
         });
         
         // Adiciona active ao botão selecionado
-        document.getElementById(`btn-${modo}`).classList.add('active');
+        const btnElement = document.getElementById(`btn-${modo}`);
+        if(btnElement) {
+            btnElement.classList.add('active');
+        }
         
         modoAtual = modo;
         renderCampos();
-        document.getElementById('prompt-area').style.display = 'none';
-    }
+        const promptArea = document.getElementById('prompt-area');
+        if(promptArea) {
+            promptArea.style.display = 'none';
+        }
+    };
 
     function renderCampos() {
         const el = document.getElementById('campos-dinamicos');
+        if(!el) return;
+        
         el.innerHTML = '';
         
         if(modoAtual === 'melhor' || modoAtual === 'aleatorio') {
@@ -395,7 +378,7 @@
                     <label>🎵 Gênero Musical:</label>
                     <select id="genre">
                         <option value="">🎲 Aleatório</option>
-                        ${GENRES.map((g,i)=>`<option value="${i}">${g.replace('[GENRE: ', '').replace(']', '')}</option>`).join('')}
+                        ${GENRES.map((g,i)=>`<option value="${i}">${g}</option>`).join('')}
                     </select>
                 </div>
                 
@@ -403,7 +386,7 @@
                     <label>🎭 Mood/Atmosfera:</label>
                     <select id="mood">
                         <option value="">🎲 Aleatório</option>
-                        ${MOODS.map((m,i)=>`<option value="${i}">${m.replace('[MOOD: ', '').replace(']', '')}</option>`).join('')}
+                        ${MOODS.map((m,i)=>`<option value="${i}">${m}</option>`).join('')}
                     </select>
                 </div>
                 
@@ -414,6 +397,14 @@
                         ${TEMPOS.map((t,i)=>`<option value="${i}">${t} BPM</option>`).join('')}
                     </select>
                 </div>
+                
+                <div class="campo-group">
+                    <label>🎤 Tipo de Vocal:</label>
+                    <select id="vocals">
+                        <option value="">🎲 Aleatório</option>
+                        ${VOCALS.map((v,i)=>`<option value="${i}">${v}</option>`).join('')}
+                    </select>
+                </div>
             `;
         } else if(modoAtual === 'manual') {
             el.innerHTML = `
@@ -421,7 +412,7 @@
                     <label>🎵 Gênero Musical:</label>
                     <select id="genre">
                         <option value="">❌ Não incluir</option>
-                        ${GENRES.map((g,i)=>`<option value="${i}">${g.replace('[GENRE: ', '').replace(']', '')}</option>`).join('')}
+                        ${GENRES.map((g,i)=>`<option value="${i}">${g}</option>`).join('')}
                     </select>
                 </div>
                 
@@ -429,7 +420,7 @@
                     <label>🎭 Mood/Atmosfera:</label>
                     <select id="mood">
                         <option value="">❌ Não incluir</option>
-                        ${MOODS.map((m,i)=>`<option value="${i}">${m.replace('[MOOD: ', '').replace(']', '')}</option>`).join('')}
+                        ${MOODS.map((m,i)=>`<option value="${i}">${m}</option>`).join('')}
                     </select>
                 </div>
                 
@@ -443,128 +434,199 @@
                 
                 <div class="campo-group">
                     <label>🎸 Instrumentos <span class="info-badge">Ctrl+Clique para múltiplos</span></label>
-                    <select id="instruments" multiple size="6">
-                        ${INSTRUMENTS.map((ins,i)=>`<option value="${i}">${ins.replace('[INSTRUMENT: ', '').replace(']', '')}</option>`).join('')}
+                    <select id="instruments" multiple size="4">
+                        ${INSTRUMENTS.map((ins,i)=>`<option value="${i}">${ins}</option>`).join('')}
                     </select>
                 </div>
                 
                 <div class="campo-group">
-                    <label>🎼 Seções Musicais <span class="info-badge">Ctrl+Clique para múltiplas</span></label>
-                    <select id="sections" multiple size="6">
-                        ${Object.keys(POSSIBLE_SECTIONS).map((sec,i)=>`<option value="${sec}">${sec.replace('[', '').replace(']', '')}</option>`).join('')}
+                    <label>🎤 Tipo de Vocal:</label>
+                    <select id="vocals">
+                        <option value="">❌ Não incluir</option>
+                        ${VOCALS.map((v,i)=>`<option value="${i}">${v}</option>`).join('')}
                     </select>
                 </div>
             `;
         }
     }
 
-    function gerarPrompt(e) {
+    window.gerarPrompt = function(e) {
         e.preventDefault();
         let prompt = '';
         
-        // MELHOR COMBINAÇÃO (modelo especial)
+        console.log('Gerando prompt, modo:', modoAtual);
+        
+        // MELHOR COMBINAÇÃO (otimizada para 200 chars)
         if(modoAtual === 'melhor') {
-            prompt = [
-                "[GENRE: Experimental Sound Design, Dark Psytrance]",
-                "[MOOD: Eerie dystopia, unknown transmissions]",
-                "[TEMPO: 150 BPM]",
-                "[INSTRUMENT: Modular synthesizers]",
-                "[INSTRUMENT: Industrial noises]",
-                "[INSTRUMENT: Psytrance basslines]",
-                "[INSTRUMENT: Metallic percussion]",
-                "",
-                "[SONG_STRUCTURE]",
-                "    [INTRO]",
-                "        [SOUND: Low-frequency drones oscillate, evoking a dormant entity stirring in the void]",
-                "        [SOUND: Glitch artifacts and distorted radio signals fade in and out]",
-                "    [CLIMAX]",
-                "        [SOUND: The psytrance bassline returns with full force, unstoppable]",
-                "        [SOUND: Harsh industrial design merges into a relentless beat]",
-                "    [OUTRO]",
-                "        [SOUND: The main beat disintegrates into glitchy fragments]",
-                "        [SOUND: A single, distant beep signifies the final system shutdown]",
-                "[/SONG_STRUCTURE]"
-            ].join('\n');
+            prompt = "Dark Psytrance, energetic uplifting, 150 BPM, synth lead, heavy bass, analog drums, male vocals";
         }
         // ALEATÓRIO
         else if(modoAtual === 'aleatorio') {
             let genre = getRandom(GENRES);
             let mood = getRandom(MOODS);
-            let tempo = `[TEMPO: ${getRandom(TEMPOS)} BPM]`;
-            let instruments = getRandom(INSTRUMENTS, Math.floor(Math.random()*3)+3);
-            let sectionsKeys = getRandom(Object.keys(POSSIBLE_SECTIONS), Math.floor(Math.random()*3)+3);
-            let structure = sectionsKeys.map(sec=>`    ${sec}\n${getRandom(POSSIBLE_SECTIONS[sec], Math.floor(Math.random()*2)+1).map(s=>`        ${s}`).join('\n')}`).join('\n');
-            prompt = [genre, mood, tempo, ...instruments, "", "[SONG_STRUCTURE]", structure, "[/SONG_STRUCTURE]"].join('\n');
+            let tempo = getRandom(TEMPOS);
+            let instruments = getRandom(INSTRUMENTS, 2);
+            let vocals = getRandom(VOCALS);
+            
+            prompt = gerarPromptCompacto(genre, mood, tempo, instruments, vocals);
         }
         // SEMI-AUTOMÁTICO
         else if(modoAtual === 'semi') {
-            let genre = document.getElementById('genre').value;
-            genre = genre ? GENRES[genre] : getRandom(GENRES);
-            let mood = document.getElementById('mood').value;
-            mood = mood ? MOODS[mood] : getRandom(MOODS);
-            let tempoIdx = document.getElementById('tempo').value;
-            let tempo = tempoIdx ? `[TEMPO: ${TEMPOS[tempoIdx]} BPM]` : `[TEMPO: ${getRandom(TEMPOS)} BPM]`;
-            let instruments = getRandom(INSTRUMENTS, Math.floor(Math.random()*3)+3);
-            let sectionsKeys = getRandom(Object.keys(POSSIBLE_SECTIONS), Math.floor(Math.random()*3)+3);
-            let structure = sectionsKeys.map(sec=>`    ${sec}\n${getRandom(POSSIBLE_SECTIONS[sec], Math.floor(Math.random()*2)+1).map(s=>`        ${s}`).join('\n')}`).join('\n');
-            prompt = [genre, mood, tempo, ...instruments, "", "[SONG_STRUCTURE]", structure, "[/SONG_STRUCTURE]"].join('\n');
+            let genreEl = document.getElementById('genre');
+            let genre = genreEl && genreEl.value ? GENRES[genreEl.value] : getRandom(GENRES);
+            
+            let moodEl = document.getElementById('mood');
+            let mood = moodEl && moodEl.value ? MOODS[moodEl.value] : getRandom(MOODS);
+            
+            let tempoEl = document.getElementById('tempo');
+            let tempo = tempoEl && tempoEl.value ? TEMPOS[tempoEl.value] : getRandom(TEMPOS);
+            
+            let vocalsEl = document.getElementById('vocals');
+            let vocals = vocalsEl && vocalsEl.value ? VOCALS[vocalsEl.value] : getRandom(VOCALS);
+            
+            let instruments = getRandom(INSTRUMENTS, 2);
+            
+            prompt = gerarPromptCompacto(genre, mood, tempo, instruments, vocals);
         }
         // MANUAL
         else if(modoAtual === 'manual') {
-            let genreIdx = document.getElementById('genre').value;
-            let moodIdx = document.getElementById('mood').value;
-            let tempoIdx = document.getElementById('tempo').value;
-            let instrumentsSel = Array.from(document.getElementById('instruments').selectedOptions).map(opt=>INSTRUMENTS[opt.value]);
-            let sectionsSel = Array.from(document.getElementById('sections').selectedOptions).map(opt=>opt.value);
+            let genreEl = document.getElementById('genre');
+            let genre = genreEl && genreEl.value ? GENRES[genreEl.value] : null;
+            
+            let moodEl = document.getElementById('mood');
+            let mood = moodEl && moodEl.value ? MOODS[moodEl.value] : null;
+            
+            let tempoEl = document.getElementById('tempo');
+            let tempo = tempoEl && tempoEl.value ? TEMPOS[tempoEl.value] : null;
+            
+            let vocalsEl = document.getElementById('vocals');
+            let vocals = vocalsEl && vocalsEl.value ? VOCALS[vocalsEl.value] : null;
+            
+            let instrumentsEl = document.getElementById('instruments');
+            let instrumentsSel = instrumentsEl ? Array.from(instrumentsEl.selectedOptions)
+                .map(opt => INSTRUMENTS[opt.value]) : [];
+            
+            prompt = gerarPromptCompacto(genre, mood, tempo, instrumentsSel, vocals);
+        }
+        
+        console.log('Prompt gerado:', prompt);
 
-            let lines = [];
-            if(genreIdx) lines.push(GENRES[genreIdx]);
-            if(moodIdx) lines.push(MOODS[moodIdx]);
-            if(tempoIdx) lines.push(`[TEMPO: ${TEMPOS[tempoIdx]} BPM]`);
-            if(instrumentsSel.length>0) lines = lines.concat(instrumentsSel);
-            lines.push("", "[SONG_STRUCTURE]");
-            if(sectionsSel.length>0) {
-                for(let sec of sectionsSel) {
-                    lines.push(`    ${sec}`);
-                    let sounds = getRandom(POSSIBLE_SECTIONS[sec], Math.floor(Math.random()*2)+1);
-                    for(let s of sounds) lines.push(`        ${s}`);
-                }
-            } else {
-                lines.push("    [NO_STRUCTURE_DEFINED]");
-                lines.push("        [SOUND: Create your own musical journey]");
-            }
-            lines.push("[/SONG_STRUCTURE]");
-            prompt = lines.join('\n');
+        // Verificar se prompt não está vazio
+        if (!prompt || prompt.trim() === '') {
+            prompt = "Dark Psytrance, energetic uplifting, 150 BPM, synth lead, heavy bass";
         }
 
-        // Mostra resultado com animação
-        document.getElementById('prompt-txt').value = prompt;
-        document.getElementById('prompt-area').style.display = 'block';
-        document.getElementById('prompt-txt').scrollIntoView({ behavior: 'smooth' });
-    }
+        // Mostra resultado com contador de caracteres
+        const promptTxt = document.getElementById('prompt-txt');
+        if(promptTxt) {
+            promptTxt.value = prompt;
+        }
+        
+        // Adicionar contador de caracteres
+        let charCount = prompt.length;
+        let charColor = charCount <= 200 ? '#2bff93' : '#ff6b6b';
+        let charStatus = charCount <= 200 ? '✅' : '⚠️';
+        
+        // Atualizar label com contador
+        let label = document.querySelector('label[for="prompt-txt"]');
+        if (label) {
+            label.innerHTML = `🎼 Seu Prompt Suno AI: <span style="color: ${charColor};">${charStatus} ${charCount}/200 caracteres</span>`;
+        }
+        
+        const promptArea = document.getElementById('prompt-area');
+        if(promptArea) {
+            promptArea.style.display = 'block';
+            promptArea.scrollIntoView({ behavior: 'smooth' });
+        }
+    };
 
-    function copiarPrompt() {
+    window.copiarPrompt = function() {
         let txt = document.getElementById('prompt-txt');
+        if(!txt) return;
+        
         txt.select();
-        txt.setSelectionRange(0, 99999); // Para mobile
+        txt.setSelectionRange(0, 99999);
         document.execCommand('copy');
         
         // Feedback visual
         let btn = document.querySelector('.btn-copiar');
-        let originalText = btn.textContent;
-        btn.textContent = '✅ Copiado!';
-        btn.style.background = 'linear-gradient(135deg, #2bff93 0%, #00d4ff 100%)';
-        
-        setTimeout(() => {
-            btn.textContent = originalText;
-            btn.style.background = 'linear-gradient(135deg, #ff6b6b 0%, #ff8e53 100%)';
-        }, 2000);
-    }
+        if(btn) {
+            let originalText = btn.textContent;
+            btn.textContent = '✅ Copiado!';
+            btn.style.background = 'linear-gradient(135deg, #2bff93 0%, #00d4ff 100%)';
+            
+            setTimeout(() => {
+                btn.textContent = originalText;
+                btn.style.background = 'linear-gradient(135deg, #ff6b6b 0%, #ff8e53 100%)';
+            }, 2000);
+        }
+    };
 
-    // Inicialização
+    // Inicialização quando a página carrega
     document.addEventListener('DOMContentLoaded', function() {
-        setModo('melhor');
+        console.log('Página carregada, inicializando...');
+        
+        // Verificar se elementos existem
+        const btnMelhor = document.getElementById('btn-melhor');
+        const camposDinamicos = document.getElementById('campos-dinamicos');
+        
+        console.log('btn-melhor encontrado:', !!btnMelhor);
+        console.log('campos-dinamicos encontrado:', !!camposDinamicos);
+        
+        // Inicializar modo melhor
+        if (window.setModo) {
+            console.log('Chamando setModo...');
+            window.setModo('melhor');
+            console.log('setModo executado');
+        } else {
+            console.error('setModo não encontrado!');
+        }
+        
+        // Verificar se o formulário existe
+        const form = document.getElementById('form-gerador');
+        if (form) {
+            console.log('Formulário encontrado, adicionando event listener...');
+            form.addEventListener('submit', function(e) {
+                e.preventDefault();
+                console.log('Submit do formulário detectado');
+                if (window.gerarPrompt) {
+                    window.gerarPrompt(e);
+                } else {
+                    console.error('gerarPrompt não encontrado!');
+                }
+            });
+        }
+        
+        // Adicionar event listeners para os botões de modo
+        ['melhor', 'aleatorio', 'semi', 'manual'].forEach(modo => {
+            const btn = document.getElementById(`btn-${modo}`);
+            if (btn) {
+                console.log(`Adicionando listener para btn-${modo}`);
+                btn.addEventListener('click', function() {
+                    console.log(`Botão ${modo} clicado`);
+                    if (window.setModo) {
+                        window.setModo(modo);
+                    }
+                });
+            }
+        });
+        
+        // Adicionar event listener para o botão copiar
+        const btnCopiar = document.getElementById('btn-copiar');
+        if (btnCopiar) {
+            console.log('Adicionando listener para botão copiar');
+            btnCopiar.addEventListener('click', function() {
+                console.log('Botão copiar clicado');
+                if (window.copiarPrompt) {
+                    window.copiarPrompt();
+                }
+            });
+        }
+        
+        console.log('Inicialização completa!');
     });
+
+})();
 </script>
 </body>
 </html>
