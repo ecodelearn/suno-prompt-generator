@@ -13,6 +13,25 @@ jobs:
       - name: 🚚 Baixar código
         uses: actions/checkout@v4
       
+      - name: ✅ Verificar secrets configurados
+        run: |
+          echo "🔍 Verificando configuração de secrets..."
+          if [ -z "${{ secrets.FTP_USERNAME }}" ]; then
+            echo "❌ ERRO: Secret FTP_USERNAME não configurado!"
+            echo "📝 Configure em: Settings > Secrets and variables > Actions"
+            echo "   Nome: FTP_USERNAME"
+            echo "   Valor: arquivos@linuxgo.com.br"
+            exit 1
+          fi
+          
+          if [ -z "${{ secrets.FTP_PASSWORD }}" ]; then
+            echo "❌ ERRO: Secret FTP_PASSWORD não configurado!"
+            exit 1
+          fi
+          
+          echo "✅ Secrets configurados corretamente!"
+          echo "👤 Usuário: ${{ secrets.FTP_USERNAME }}"
+      
       - name: 🔍 Descobrir servidor correto
         id: find-server
         run: |
@@ -28,6 +47,12 @@ jobs:
               echo "❌ DNS falhou para: $server"
             fi
           done
+          
+          if [ -z "$(cat $GITHUB_OUTPUT)" ]; then
+            echo "❌ Nenhum servidor FTP encontrado!"
+            echo "🔧 Configure o secret FTP_SERVER manualmente"
+            exit 1
+          fi
       
       - name: 📂 Deploy via FTP
         if: steps.find-server.outputs.server
