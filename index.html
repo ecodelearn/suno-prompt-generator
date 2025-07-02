@@ -248,63 +248,79 @@
 (function() {
     'use strict';
     
-    // Dados musicais detalhados para Suno AI (até 200 chars)
+    // Dados otimizados para reconhecimento da IA Suno (até 200 chars)
     const GENRES = [
-        "[GENRE: Dark Psytrance, Industrial]",
-        "[GENRE: Synthwave, Retrowave]",
-        "[GENRE: Industrial Techno, EBM]", 
-        "[GENRE: Jazz Fusion, Neo-Soul]",
-        "[GENRE: Trap Hip-Hop, Urban Bass]",
-        "[GENRE: Progressive House, Deep Tech]",
-        "[GENRE: Ambient Drone, Dark Ambient]",
-        "[GENRE: Post Rock, Shoegaze]",
-        "[GENRE: Breakbeat, Drum and Bass]",
-        "[GENRE: Dubstep, Future Bass]"
+        "dark psytrance, industrial techno",
+        "synthwave, retro electro",
+        "hardcore industrial, EBM", 
+        "jazz fusion, neo-soul",
+        "trap hip-hop, 808 beats",
+        "progressive house, deep tech",
+        "dark ambient, drone",
+        "post-rock, shoegaze",
+        "breakbeat, drum & bass",
+        "dubstep, future bass",
+        "metal, djent",
+        "pop rock, alternative"
     ];
     
     const MOODS = [
-        "[MOOD: energetic, uplifting, euphoric]",
-        "[MOOD: dark, mysterious, haunting]", 
-        "[MOOD: dreamy, ethereal, floating]",
-        "[MOOD: aggressive, intense, powerful]",
-        "[MOOD: melancholic, nostalgic, bittersweet]",
-        "[MOOD: cosmic, transcendent, otherworldly]",
-        "[MOOD: urban, gritty, street-wise]",
-        "[MOOD: peaceful, meditative, calming]"
+        "energetic and uplifting",
+        "dark and mysterious", 
+        "dreamy and ethereal",
+        "aggressive and intense",
+        "melancholic and nostalgic",
+        "epic and cinematic",
+        "relaxed and chill",
+        "haunting and atmospheric"
     ];
     
     const INSTRUMENTS = [
-        "[INSTRUMENT: modular synth, analog leads]",
-        "[INSTRUMENT: heavy 808 bass, sub frequencies]",
-        "[INSTRUMENT: vintage analog drums, percussion]",
-        "[INSTRUMENT: distorted electric guitar, power chords]",
-        "[INSTRUMENT: smooth saxophone, jazz licks]",
-        "[INSTRUMENT: grand piano, melodic arpeggios]",
-        "[INSTRUMENT: chopped vocals, vocal stabs]",
-        "[INSTRUMENT: lush strings, orchestral pads]",
-        "[INSTRUMENT: brass section, horn stabs]",
-        "[INSTRUMENT: glitch effects, digital noise]"
+        "heavy 808 bass",
+        "analog synthesizers", 
+        "distorted electric guitar",
+        "orchestral strings",
+        "jazz saxophone",
+        "vintage piano",
+        "electronic drums",
+        "choir vocals",
+        "brass section",
+        "glitch effects"
     ];
     
-    const TEMPOS = [70, 85, 100, 110, 120, 128, 140, 150, 160, 175];
+    const TEMPOS = [
+        "slow tempo 70-90 BPM",
+        "medium tempo 100-120 BPM", 
+        "fast tempo 130-150 BPM",
+        "very fast tempo 160-180 BPM"
+    ];
     
     const VOCALS = [
-        "[VOCALS: deep male voice, emotional delivery]",
-        "[VOCALS: ethereal female vocals, harmonies]", 
-        "[VOCALS: epic choir, layered voices]",
-        "[VOCALS: rapid-fire rap, urban flow]",
-        "[VOCALS: whispered vocals, intimate tone]",
-        "[VOCALS: robotic vocals, auto-tuned]",
-        "[VOCALS: instrumental, no vocals]"
+        "male vocals, deep voice",
+        "female vocals, ethereal", 
+        "rap vocals, rhythmic",
+        "choir, harmonious",
+        "whispered vocals, intimate",
+        "auto-tuned vocals, robotic",
+        "instrumental, no vocals"
     ];
 
     const EFFECTS = [
-        "[EFFECTS: heavy reverb, spatial depth]",
-        "[EFFECTS: distortion, saturation]",
-        "[EFFECTS: delay echoes, time-stretched]",
-        "[EFFECTS: filter sweeps, modulation]",
-        "[EFFECTS: compression, punchy dynamics]",
-        "[EFFECTS: chorus, stereo width]"
+        "heavy reverb, spacious",
+        "distortion, saturated",
+        "delay echoes, ambient",
+        "filter sweeps, dynamic",
+        "compression, punchy",
+        "stereo chorus, wide"
+    ];
+
+    const SONG_STRUCTURE = [
+        "verse-chorus structure",
+        "build-up and drop",
+        "ambient intro, explosive climax",
+        "progressive arrangement",
+        "minimalist approach",
+        "complex polyrhythms"
     ];
 
     // Estado do modo selecionado
@@ -322,17 +338,18 @@
         return n === 1 ? result[0] : result;
     }
 
-    function gerarPromptDetalhado(genre, mood, tempo, instruments, vocals, effects) {
+    function gerarPromptSuno(genre, mood, tempo, instruments, vocals, effects, structure) {
         let parts = [];
         
+        // Ordem otimizada para Suno AI
         if(genre) parts.push(genre);
+        if(tempo) parts.push(tempo);
         if(mood) parts.push(mood);
-        if(tempo) parts.push(`[TEMPO: ${tempo} BPM]`);
         
-        // Adicionar múltiplos instrumentos se é array
+        // Adicionar instrumentos (máximo 2 para não saturar)
         if(instruments) {
             if(Array.isArray(instruments)) {
-                parts = parts.concat(instruments);
+                parts = parts.concat(instruments.slice(0, 2)); // Máximo 2 instrumentos
             } else {
                 parts.push(instruments);
             }
@@ -340,12 +357,23 @@
         
         if(vocals) parts.push(vocals);
         if(effects) parts.push(effects);
+        if(structure) parts.push(structure);
         
-        let prompt = parts.join(' ');
+        let prompt = parts.join(', ');
         
-        // Otimizar para chegar próximo aos 200 caracteres
+        // Otimizar para 200 caracteres mantendo as partes mais importantes
         if(prompt.length > 200) {
-            prompt = prompt.substring(0, 197) + '...';
+            // Priorizar: gênero, tempo, mood, 1 instrumento, vocal
+            let essential = [genre, tempo, mood];
+            if(instruments && Array.isArray(instruments)) essential.push(instruments[0]);
+            else if(instruments) essential.push(instruments);
+            if(vocals) essential.push(vocals);
+            
+            prompt = essential.filter(p => p).join(', ');
+            
+            if(prompt.length > 200) {
+                prompt = prompt.substring(0, 197) + '...';
+            }
         }
         
         return prompt;
@@ -389,7 +417,7 @@
                     <label>🎵 Gênero Musical:</label>
                     <select id="genre">
                         <option value="">🎲 Aleatório</option>
-                        ${GENRES.map((g,i)=>`<option value="${i}">${g.replace('[GENRE: ', '').replace(']', '')}</option>`).join('')}
+                        ${GENRES.map((g,i)=>`<option value="${i}">${g}</option>`).join('')}
                     </select>
                 </div>
                 
@@ -397,7 +425,7 @@
                     <label>🎭 Mood/Atmosfera:</label>
                     <select id="mood">
                         <option value="">🎲 Aleatório</option>
-                        ${MOODS.map((m,i)=>`<option value="${i}">${m.replace('[MOOD: ', '').replace(']', '')}</option>`).join('')}
+                        ${MOODS.map((m,i)=>`<option value="${i}">${m}</option>`).join('')}
                     </select>
                 </div>
                 
@@ -405,7 +433,7 @@
                     <label>⏱️ BPM (Tempo):</label>
                     <select id="tempo">
                         <option value="">🎲 Aleatório</option>
-                        ${TEMPOS.map((t,i)=>`<option value="${i}">${t} BPM</option>`).join('')}
+                        ${TEMPOS.map((t,i)=>`<option value="${i}">${t}</option>`).join('')}
                     </select>
                 </div>
                 
@@ -413,7 +441,7 @@
                     <label>🎤 Tipo de Vocal:</label>
                     <select id="vocals">
                         <option value="">🎲 Aleatório</option>
-                        ${VOCALS.map((v,i)=>`<option value="${i}">${v.replace('[VOCALS: ', '').replace(']', '')}</option>`).join('')}
+                        ${VOCALS.map((v,i)=>`<option value="${i}">${v}</option>`).join('')}
                     </select>
                 </div>
             `;
@@ -446,7 +474,7 @@
                 <div class="campo-group">
                     <label>🎸 Instrumentos <span class="info-badge">Ctrl+Clique para múltiplos</span></label>
                     <select id="instruments" multiple size="4">
-                        ${INSTRUMENTS.map((ins,i)=>`<option value="${i}">${ins.replace('[INSTRUMENT: ', '').replace(']', '')}</option>`).join('')}
+                        ${INSTRUMENTS.map((ins,i)=>`<option value="${i}">${ins}</option>`).join('')}
                     </select>
                 </div>
                 
@@ -454,7 +482,7 @@
                     <label>🎤 Tipo de Vocal:</label>
                     <select id="vocals">
                         <option value="">❌ Não incluir</option>
-                        ${VOCALS.map((v,i)=>`<option value="${i}">${v.replace('[VOCALS: ', '').replace(']', '')}</option>`).join('')}
+                        ${VOCALS.map((v,i)=>`<option value="${i}">${v}</option>`).join('')}
                     </select>
                 </div>
                 
@@ -462,7 +490,15 @@
                     <label>🎛️ Efeitos Sonoros:</label>
                     <select id="effects">
                         <option value="">❌ Não incluir</option>
-                        ${EFFECTS.map((e,i)=>`<option value="${i}">${e.replace('[EFFECTS: ', '').replace(']', '')}</option>`).join('')}
+                        ${EFFECTS.map((e,i)=>`<option value="${i}">${e}</option>`).join('')}
+                    </select>
+                </div>
+                
+                <div class="campo-group">
+                    <label>🎼 Estrutura Musical:</label>
+                    <select id="structure">
+                        <option value="">❌ Não incluir</option>
+                        ${SONG_STRUCTURE.map((s,i)=>`<option value="${i}">${s}</option>`).join('')}
                     </select>
                 </div>
             `;
@@ -475,9 +511,9 @@
         
         console.log('Gerando prompt, modo:', modoAtual);
         
-        // MELHOR COMBINAÇÃO (otimizada para ~200 chars)
+        // MELHOR COMBINAÇÃO (otimizada para Suno AI)
         if(modoAtual === 'melhor') {
-            prompt = "[GENRE: Dark Psytrance, Industrial] [MOOD: energetic, uplifting, euphoric] [TEMPO: 150 BPM] [INSTRUMENT: modular synth, analog leads] [VOCALS: deep male voice, emotional delivery]";
+            prompt = "dark psytrance, industrial techno, fast tempo 130-150 BPM, energetic and uplifting, heavy 808 bass, analog synthesizers, male vocals, deep voice, heavy reverb, spacious";
         }
         // ALEATÓRIO
         else if(modoAtual === 'aleatorio') {
@@ -487,8 +523,9 @@
             let instruments = getRandom(INSTRUMENTS, 2); // 2 instrumentos
             let vocals = getRandom(VOCALS);
             let effects = getRandom(EFFECTS);
+            let structure = getRandom(SONG_STRUCTURE);
             
-            prompt = gerarPromptDetalhado(genre, mood, tempo, instruments, vocals, effects);
+            prompt = gerarPromptSuno(genre, mood, tempo, instruments, vocals, effects, structure);
         }
         // SEMI-AUTOMÁTICO
         else if(modoAtual === 'semi') {
@@ -506,8 +543,9 @@
             
             let instruments = getRandom(INSTRUMENTS, 2); // 2 instrumentos aleatórios
             let effects = getRandom(EFFECTS);
+            let structure = getRandom(SONG_STRUCTURE);
             
-            prompt = gerarPromptDetalhado(genre, mood, tempo, instruments, vocals, effects);
+            prompt = gerarPromptSuno(genre, mood, tempo, instruments, vocals, effects, structure);
         }
         // MANUAL
         else if(modoAtual === 'manual') {
@@ -530,14 +568,17 @@
             let effectsEl = document.getElementById('effects');
             let effects = effectsEl && effectsEl.value ? EFFECTS[effectsEl.value] : null;
             
-            prompt = gerarPromptDetalhado(genre, mood, tempo, instrumentsSel, vocals, effects);
+            let structureEl = document.getElementById('structure');
+            let structure = structureEl && structureEl.value ? SONG_STRUCTURE[structureEl.value] : null;
+            
+            prompt = gerarPromptSuno(genre, mood, tempo, instrumentsSel, vocals, effects, structure);
         }
         
         console.log('Prompt gerado:', prompt);
 
         // Verificar se prompt não está vazio
         if (!prompt || prompt.trim() === '') {
-            prompt = "[GENRE: Dark Psytrance, Industrial] [MOOD: energetic, uplifting] [TEMPO: 150 BPM] [INSTRUMENT: modular synth] [VOCALS: deep male voice]";
+            prompt = "dark psytrance, fast tempo 150 BPM, energetic and uplifting, heavy 808 bass, male vocals";
         }
 
         // Mostra resultado com contador de caracteres
