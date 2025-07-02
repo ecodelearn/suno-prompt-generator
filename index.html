@@ -219,7 +219,7 @@
 <div class="painel">
     <h1>🎵 Suno AI</h1>
     <h2 style="text-align: center; color: #00d4ff; margin-bottom: 1rem;">Gerador de Prompts</h2>
-    <p class="subtitle">Crie prompts únicos e compactos (máx. 200 caracteres) para suas criações musicais no Suno AI</p>
+    <p class="subtitle">Crie prompts únicos e otimizados (máx. 120 caracteres) baseados nas melhores práticas do Suno AI</p>
     
     <div class="opcoes">
         <button class="active" id="btn-melhor">🏆 Melhor Combinação</button>
@@ -248,79 +248,68 @@
 (function() {
     'use strict';
     
-    // Dados otimizados para reconhecimento da IA Suno (até 200 chars)
+    // Dados otimizados especificamente para Suno AI (máx. 120 chars)
     const GENRES = [
-        "dark psytrance, industrial techno",
-        "synthwave, retro electro",
-        "hardcore industrial, EBM", 
-        "jazz fusion, neo-soul",
-        "trap hip-hop, 808 beats",
-        "progressive house, deep tech",
-        "dark ambient, drone",
-        "post-rock, shoegaze",
-        "breakbeat, drum & bass",
-        "dubstep, future bass",
-        "metal, djent",
-        "pop rock, alternative"
+        "electronic dance music",
+        "indie rock", 
+        "jazz fusion",
+        "trap hip-hop",
+        "synthwave",
+        "ambient chill",
+        "folk acoustic",
+        "metal djent",
+        "pop ballad",
+        "techno house"
     ];
     
     const MOODS = [
-        "energetic and uplifting",
-        "dark and mysterious", 
-        "dreamy and ethereal",
-        "aggressive and intense",
-        "melancholic and nostalgic",
-        "epic and cinematic",
-        "relaxed and chill",
-        "haunting and atmospheric"
+        "uplifting energetic",
+        "dark atmospheric", 
+        "dreamy ethereal",
+        "aggressive powerful",
+        "melancholic emotional",
+        "epic cinematic",
+        "relaxed peaceful",
+        "mysterious haunting"
     ];
     
     const INSTRUMENTS = [
-        "heavy 808 bass",
-        "analog synthesizers", 
-        "distorted electric guitar",
-        "orchestral strings",
-        "jazz saxophone",
-        "vintage piano",
-        "electronic drums",
-        "choir vocals",
-        "brass section",
-        "glitch effects"
-    ];
-    
-    const TEMPOS = [
-        "slow tempo 70-90 BPM",
-        "medium tempo 100-120 BPM", 
-        "fast tempo 130-150 BPM",
-        "very fast tempo 160-180 BPM"
+        "electric guitar",
+        "piano keys", 
+        "heavy bass",
+        "violin strings",
+        "saxophone",
+        "synthesizer",
+        "acoustic drums",
+        "electronic beats"
     ];
     
     const VOCALS = [
-        "male vocals, deep voice",
-        "female vocals, ethereal", 
-        "rap vocals, rhythmic",
-        "choir, harmonious",
-        "whispered vocals, intimate",
-        "auto-tuned vocals, robotic",
-        "instrumental, no vocals"
+        "male vocals",
+        "female vocals", 
+        "choir harmonies",
+        "rap vocals",
+        "auto-tuned",
+        "whispered",
+        "instrumental"
     ];
 
-    const EFFECTS = [
-        "heavy reverb, spacious",
-        "distortion, saturated",
-        "delay echoes, ambient",
-        "filter sweeps, dynamic",
-        "compression, punchy",
-        "stereo chorus, wide"
+    const PRODUCTION_STYLE = [
+        "modern production",
+        "lo-fi aesthetic",
+        "studio quality",
+        "live recording",
+        "vintage sound",
+        "digital crisp"
     ];
 
-    const SONG_STRUCTURE = [
-        "verse-chorus structure",
-        "build-up and drop",
-        "ambient intro, explosive climax",
-        "progressive arrangement",
-        "minimalist approach",
-        "complex polyrhythms"
+    const META_TAGS = [
+        "[Verse]",
+        "[Chorus]", 
+        "[Bridge]",
+        "[Intro]",
+        "[Outro]",
+        "[Drop]"
     ];
 
     // Estado do modo selecionado
@@ -338,41 +327,38 @@
         return n === 1 ? result[0] : result;
     }
 
-    function gerarPromptSuno(genre, mood, tempo, instruments, vocals, effects, structure) {
+    function gerarPromptSuno(genre, mood, instruments, vocals, production, metaTag) {
         let parts = [];
         
-        // Ordem otimizada para Suno AI
+        // Ordem otimizada baseada na pesquisa: Meta Tag + Gênero + Mood + Instrumento + Vocal
+        if(metaTag) parts.push(metaTag);
         if(genre) parts.push(genre);
-        if(tempo) parts.push(tempo);
         if(mood) parts.push(mood);
-        
-        // Adicionar instrumentos (máximo 2 para não saturar)
         if(instruments) {
             if(Array.isArray(instruments)) {
-                parts = parts.concat(instruments.slice(0, 2)); // Máximo 2 instrumentos
+                parts.push(instruments[0]); // Só 1 instrumento para economizar caracteres
             } else {
                 parts.push(instruments);
             }
         }
-        
         if(vocals) parts.push(vocals);
-        if(effects) parts.push(effects);
-        if(structure) parts.push(structure);
+        if(production) parts.push(production);
         
         let prompt = parts.join(', ');
         
-        // Otimizar para 200 caracteres mantendo as partes mais importantes
-        if(prompt.length > 200) {
-            // Priorizar: gênero, tempo, mood, 1 instrumento, vocal
-            let essential = [genre, tempo, mood];
-            if(instruments && Array.isArray(instruments)) essential.push(instruments[0]);
-            else if(instruments) essential.push(instruments);
+        // Limite real do Suno: 120 caracteres
+        if(prompt.length > 120) {
+            // Priorizar: Meta Tag + Gênero + Mood
+            let essential = [];
+            if(metaTag) essential.push(metaTag);
+            if(genre) essential.push(genre);
+            if(mood) essential.push(mood);
             if(vocals) essential.push(vocals);
             
-            prompt = essential.filter(p => p).join(', ');
+            prompt = essential.join(', ');
             
-            if(prompt.length > 200) {
-                prompt = prompt.substring(0, 197) + '...';
+            if(prompt.length > 120) {
+                prompt = prompt.substring(0, 117) + '...';
             }
         }
         
@@ -426,14 +412,6 @@
                     <select id="mood">
                         <option value="">🎲 Aleatório</option>
                         ${MOODS.map((m,i)=>`<option value="${i}">${m}</option>`).join('')}
-                    </select>
-                </div>
-                
-                <div class="campo-group">
-                    <label>⏱️ BPM (Tempo):</label>
-                    <select id="tempo">
-                        <option value="">🎲 Aleatório</option>
-                        ${TEMPOS.map((t,i)=>`<option value="${i}">${t}</option>`).join('')}
                     </select>
                 </div>
                 
@@ -511,21 +489,20 @@
         
         console.log('Gerando prompt, modo:', modoAtual);
         
-        // MELHOR COMBINAÇÃO (otimizada para Suno AI)
+        // MELHOR COMBINAÇÃO (otimizada para Suno AI - máx 120 chars)
         if(modoAtual === 'melhor') {
-            prompt = "dark psytrance, industrial techno, fast tempo 130-150 BPM, energetic and uplifting, heavy 808 bass, analog synthesizers, male vocals, deep voice, heavy reverb, spacious";
+            prompt = "[Chorus] electronic dance music, uplifting energetic, synthesizer, female vocals";
         }
         // ALEATÓRIO
         else if(modoAtual === 'aleatorio') {
+            let metaTag = getRandom(META_TAGS);
             let genre = getRandom(GENRES);
             let mood = getRandom(MOODS);
-            let tempo = getRandom(TEMPOS);
-            let instruments = getRandom(INSTRUMENTS, 2); // 2 instrumentos
+            let instruments = getRandom(INSTRUMENTS);
             let vocals = getRandom(VOCALS);
-            let effects = getRandom(EFFECTS);
-            let structure = getRandom(SONG_STRUCTURE);
+            let production = getRandom(PRODUCTION_STYLE);
             
-            prompt = gerarPromptSuno(genre, mood, tempo, instruments, vocals, effects, structure);
+            prompt = gerarPromptSuno(genre, mood, instruments, vocals, production, metaTag);
         }
         // SEMI-AUTOMÁTICO
         else if(modoAtual === 'semi') {
@@ -535,17 +512,14 @@
             let moodEl = document.getElementById('mood');
             let mood = moodEl && moodEl.value ? MOODS[moodEl.value] : getRandom(MOODS);
             
-            let tempoEl = document.getElementById('tempo');
-            let tempo = tempoEl && tempoEl.value ? TEMPOS[tempoEl.value] : getRandom(TEMPOS);
-            
             let vocalsEl = document.getElementById('vocals');
             let vocals = vocalsEl && vocalsEl.value ? VOCALS[vocalsEl.value] : getRandom(VOCALS);
             
-            let instruments = getRandom(INSTRUMENTS, 2); // 2 instrumentos aleatórios
-            let effects = getRandom(EFFECTS);
-            let structure = getRandom(SONG_STRUCTURE);
+            let metaTag = getRandom(META_TAGS);
+            let instruments = getRandom(INSTRUMENTS);
+            let production = getRandom(PRODUCTION_STYLE);
             
-            prompt = gerarPromptSuno(genre, mood, tempo, instruments, vocals, effects, structure);
+            prompt = gerarPromptSuno(genre, mood, instruments, vocals, production, metaTag);
         }
         // MANUAL
         else if(modoAtual === 'manual') {
@@ -555,30 +529,27 @@
             let moodEl = document.getElementById('mood');
             let mood = moodEl && moodEl.value ? MOODS[moodEl.value] : null;
             
-            let tempoEl = document.getElementById('tempo');
-            let tempo = tempoEl && tempoEl.value ? TEMPOS[tempoEl.value] : null;
-            
             let vocalsEl = document.getElementById('vocals');
             let vocals = vocalsEl && vocalsEl.value ? VOCALS[vocalsEl.value] : null;
             
             let instrumentsEl = document.getElementById('instruments');
-            let instrumentsSel = instrumentsEl ? Array.from(instrumentsEl.selectedOptions)
-                .map(opt => INSTRUMENTS[opt.value]) : [];
+            let instruments = instrumentsEl && instrumentsEl.selectedOptions.length > 0 ? 
+                INSTRUMENTS[instrumentsEl.selectedOptions[0].value] : null;
             
-            let effectsEl = document.getElementById('effects');
-            let effects = effectsEl && effectsEl.value ? EFFECTS[effectsEl.value] : null;
+            let productionEl = document.getElementById('production');
+            let production = productionEl && productionEl.value ? PRODUCTION_STYLE[productionEl.value] : null;
             
-            let structureEl = document.getElementById('structure');
-            let structure = structureEl && structureEl.value ? SONG_STRUCTURE[structureEl.value] : null;
+            let metaTagEl = document.getElementById('metatag');
+            let metaTag = metaTagEl && metaTagEl.value ? META_TAGS[metaTagEl.value] : null;
             
-            prompt = gerarPromptSuno(genre, mood, tempo, instrumentsSel, vocals, effects, structure);
+            prompt = gerarPromptSuno(genre, mood, instruments, vocals, production, metaTag);
         }
         
         console.log('Prompt gerado:', prompt);
 
         // Verificar se prompt não está vazio
         if (!prompt || prompt.trim() === '') {
-            prompt = "dark psytrance, fast tempo 150 BPM, energetic and uplifting, heavy 808 bass, male vocals";
+            prompt = "[Verse] electronic dance music, uplifting energetic, synthesizer";
         }
 
         // Mostra resultado com contador de caracteres
@@ -589,13 +560,13 @@
         
         // Adicionar contador de caracteres
         let charCount = prompt.length;
-        let charColor = charCount <= 200 ? '#2bff93' : '#ff6b6b';
-        let charStatus = charCount <= 200 ? '✅' : '⚠️';
+        let charColor = charCount <= 120 ? '#2bff93' : '#ff6b6b';
+        let charStatus = charCount <= 120 ? '✅' : '⚠️';
         
         // Atualizar label com contador
         let label = document.querySelector('label[for="prompt-txt"]');
         if (label) {
-            label.innerHTML = `🎼 Seu Prompt Suno AI: <span style="color: ${charColor};">${charStatus} ${charCount}/200 caracteres</span>`;
+            label.innerHTML = `🎼 Seu Prompt Suno AI: <span style="color: ${charColor};">${charStatus} ${charCount}/120 caracteres</span>`;
         }
         
         const promptArea = document.getElementById('prompt-area');
