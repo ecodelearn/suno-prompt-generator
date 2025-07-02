@@ -1,0 +1,41 @@
+name: 🎵 Deploy Suno Prompt Generator
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  deploy:
+    name: 🎉 Deploy para /suno-prompt/
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: 🚚 Baixar código
+        uses: actions/checkout@v4
+      
+      - name: 🔍 Descobrir servidor correto
+        id: find-server
+        run: |
+          servers=("linuxgo.com.br" "1gigahost.com.br" "ftp.1gigahost.com.br")
+          
+          for server in "${servers[@]}"; do
+            echo "Testando: $server"
+            if nslookup $server > /dev/null 2>&1; then
+              echo "✅ DNS OK para: $server"
+              echo "server=$server" >> $GITHUB_OUTPUT
+              break
+            else
+              echo "❌ DNS falhou para: $server"
+            fi
+          done
+      
+      - name: 📂 Deploy via FTP
+        if: steps.find-server.outputs.server
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: ${{ steps.find-server.outputs.server }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          port: 21
+          protocol: ftp
+          server-dir: /suno-prompt/
