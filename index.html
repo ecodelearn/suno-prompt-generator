@@ -168,10 +168,6 @@
             margin-bottom: 1.5rem;
         }
         
-        select[multiple] {
-            min-height: 120px;
-        }
-        
         .info-badge {
             display: inline-block;
             background: rgba(43, 255, 147, 0.1);
@@ -240,7 +236,7 @@
     </div>
     
     <div class="footer">
-        <p>🎶 Criado para potencializar sua criatividade musical | <strong>Marcos Campos - Adaptação Daniel Dias</strong></p>
+        <p>🎶 Criado para potencializar sua criatividade musical | <strong>ecodelearn</strong></p>
     </div>
 </div>
 
@@ -317,6 +313,11 @@
 
     // Utilitários
     function getRandom(arr, n = 1) {
+        if (!arr || arr.length === 0) {
+            console.error('Array vazio ou undefined para getRandom');
+            return n === 1 ? '' : [];
+        }
+        
         let copy = [...arr];
         let result = [];
         for(let i = 0; i < n; i++) {
@@ -393,18 +394,40 @@
     };
 
     function renderCampos() {
-        const el = document.getElementById('campos-dinamicos');
-        if(!el) return;
+        console.log(`=== RENDER CAMPOS ===`);
+        console.log(`Modo atual: ${modoAtual}`);
         
+        const el = document.getElementById('campos-dinamicos');
+        if(!el) {
+            console.error('❌ Elemento campos-dinamicos não encontrado!');
+            return;
+        }
+        
+        console.log('✅ Elemento campos-dinamicos encontrado');
+        
+        // Limpar conteúdo
         el.innerHTML = '';
+        console.log('🧹 Conteúdo limpo');
+        
+        // Verificar se todas as constantes estão definidas
+        console.log('=== VERIFICANDO CONSTANTES ===');
+        console.log('GENRES definido:', typeof GENRES !== 'undefined' && GENRES?.length);
+        console.log('MOODS definido:', typeof MOODS !== 'undefined' && MOODS?.length);
+        console.log('INSTRUMENTS definido:', typeof INSTRUMENTS !== 'undefined' && INSTRUMENTS?.length);
+        console.log('VOCALS definido:', typeof VOCALS !== 'undefined' && VOCALS?.length);
+        console.log('PRODUCTION_STYLE definido:', typeof PRODUCTION_STYLE !== 'undefined' && PRODUCTION_STYLE?.length);
+        console.log('META_TAGS definido:', typeof META_TAGS !== 'undefined' && META_TAGS?.length);
+        console.log('================================');
         
         if(modoAtual === 'melhor' || modoAtual === 'aleatorio') {
             el.innerHTML = '<p style="text-align: center; color: #888; font-style: italic; margin: 2rem 0;">🎯 Modo automático ativado. Clique em "Gerar Prompt" para criar sua música!</p>';
+            console.log('✅ Modo automático renderizado');
             return;
         }
 
         if(modoAtual === 'semi') {
-            el.innerHTML = `
+            console.log('🔄 Renderizando modo semi-automático...');
+            const semiHTML = `
                 <div class="campo-group">
                     <label>🎵 Gênero Musical:</label>
                     <select id="genre">
@@ -429,8 +452,13 @@
                     </select>
                 </div>
             `;
+            el.innerHTML = semiHTML;
+            console.log('✅ Semi-automático renderizado');
+            
         } else if(modoAtual === 'manual') {
-            el.innerHTML = `
+            console.log('🔄 Renderizando modo MANUAL...');
+            
+            const manualHTML = `
                 <div class="campo-group">
                     <label>🎵 Gênero Musical:</label>
                     <select id="genre">
@@ -448,16 +476,9 @@
                 </div>
                 
                 <div class="campo-group">
-                    <label>⏱️ BPM (Tempo):</label>
-                    <select id="tempo">
+                    <label>🎸 Instrumento Principal:</label>
+                    <select id="instruments">
                         <option value="">❌ Não incluir</option>
-                        ${TEMPOS.map((t,i)=>`<option value="${i}">${t} BPM</option>`).join('')}
-                    </select>
-                </div>
-                
-                <div class="campo-group">
-                    <label>🎸 Instrumentos <span class="info-badge">Ctrl+Clique para múltiplos</span></label>
-                    <select id="instruments" multiple size="4">
                         ${INSTRUMENTS.map((ins,i)=>`<option value="${i}">${ins}</option>`).join('')}
                     </select>
                 </div>
@@ -471,22 +492,44 @@
                 </div>
                 
                 <div class="campo-group">
-                    <label>🎛️ Efeitos Sonoros:</label>
-                    <select id="effects">
+                    <label>🎛️ Estilo de Produção:</label>
+                    <select id="production">
                         <option value="">❌ Não incluir</option>
-                        ${EFFECTS.map((e,i)=>`<option value="${i}">${e}</option>`).join('')}
+                        ${PRODUCTION_STYLE.map((p,i)=>`<option value="${i}">${p}</option>`).join('')}
                     </select>
                 </div>
                 
                 <div class="campo-group">
-                    <label>🎼 Estrutura Musical:</label>
-                    <select id="structure">
+                    <label>🏷️ Meta Tag (Estrutura):</label>
+                    <select id="metatag">
                         <option value="">❌ Não incluir</option>
-                        ${SONG_STRUCTURE.map((s,i)=>`<option value="${i}">${s}</option>`).join('')}
+                        ${META_TAGS.map((m,i)=>`<option value="${i}">${m}</option>`).join('')}
                     </select>
                 </div>
             `;
+            
+            console.log('HTML manual gerado, aplicando...');
+            el.innerHTML = manualHTML;
+            
+            // Verificar se elementos foram criados
+            setTimeout(() => {
+                console.log('🔍 Verificando elementos criados:');
+                console.log('- genre:', !!document.getElementById('genre'));
+                console.log('- mood:', !!document.getElementById('mood'));
+                console.log('- instruments:', !!document.getElementById('instruments'));
+                console.log('- vocals:', !!document.getElementById('vocals'));
+                console.log('- production:', !!document.getElementById('production'));
+                console.log('- metatag:', !!document.getElementById('metatag'));
+                
+                if(document.getElementById('genre')) {
+                    console.log('✅ Modo manual renderizado com sucesso!');
+                } else {
+                    console.error('❌ Elementos não foram criados!');
+                }
+            }, 100);
         }
+        
+        console.log('=== FIM RENDER CAMPOS ===');
     }
 
     window.gerarPrompt = function(e) {
@@ -494,17 +537,6 @@
         let prompt = '';
         
         console.log('Gerando prompt, modo:', modoAtual);
-        
-        // Debug: verificar se elementos existem no modo manual
-        if(modoAtual === 'manual') {
-            console.log('Modo manual - verificando elementos:');
-            console.log('- genre:', !!document.getElementById('genre'));
-            console.log('- mood:', !!document.getElementById('mood'));
-            console.log('- instruments:', !!document.getElementById('instruments'));
-            console.log('- vocals:', !!document.getElementById('vocals'));
-            console.log('- production:', !!document.getElementById('production'));
-            console.log('- metatag:', !!document.getElementById('metatag'));
-        }
         
         // MELHOR COMBINAÇÃO (otimizada para Suno AI - máx 120 chars)
         if(modoAtual === 'melhor') {
