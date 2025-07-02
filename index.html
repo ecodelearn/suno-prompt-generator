@@ -240,7 +240,7 @@
     </div>
     
     <div class="footer">
-        <p>🎶 Criado para potencializar sua criatividade musical | <strong>ecodelearn</strong></p>
+        <p>🎶 Criado para potencializar sua criatividade musical | <strong>Marcos Campos - Adaptação Daniel Dias</strong></p>
     </div>
 </div>
 
@@ -367,6 +367,8 @@
 
     // Funções principais
     window.setModo = function(modo) {
+        console.log(`Mudando para modo: ${modo}`);
+        
         // Remove active de todos os botões
         document.querySelectorAll('.opcoes button').forEach(btn => {
             btn.classList.remove('active');
@@ -376,10 +378,14 @@
         const btnElement = document.getElementById(`btn-${modo}`);
         if(btnElement) {
             btnElement.classList.add('active');
+            console.log(`Botão btn-${modo} ativado`);
         }
         
         modoAtual = modo;
+        console.log(`Modo atual definido como: ${modoAtual}`);
+        
         renderCampos();
+        
         const promptArea = document.getElementById('prompt-area');
         if(promptArea) {
             promptArea.style.display = 'none';
@@ -488,6 +494,17 @@
         let prompt = '';
         
         console.log('Gerando prompt, modo:', modoAtual);
+        
+        // Debug: verificar se elementos existem no modo manual
+        if(modoAtual === 'manual') {
+            console.log('Modo manual - verificando elementos:');
+            console.log('- genre:', !!document.getElementById('genre'));
+            console.log('- mood:', !!document.getElementById('mood'));
+            console.log('- instruments:', !!document.getElementById('instruments'));
+            console.log('- vocals:', !!document.getElementById('vocals'));
+            console.log('- production:', !!document.getElementById('production'));
+            console.log('- metatag:', !!document.getElementById('metatag'));
+        }
         
         // MELHOR COMBINAÇÃO (otimizada para Suno AI - máx 120 chars)
         if(modoAtual === 'melhor') {
